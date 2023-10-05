@@ -1,0 +1,56 @@
+pipeline {
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '5'))
+    }
+
+    agent any
+    
+    stages {
+        stage('Terraform version') {
+            steps {
+                echo 'Terraform version is checking'
+                sh 'terraform --version'
+            }
+        }
+        stage('Terraform format') {
+            steps {
+                echo 'Terraform version is checking'
+                sh 'terraform fmt'
+            }
+        }
+        stage('Terraform init') {
+            steps {
+                echo 'Terraform initialization started'
+                sh 'terraform init'
+            }
+        }
+        stage('Terraform Plan') {
+            steps {
+                echo 'Terraform initialization is in progress'
+                sh 'terraform plan --var terraform.tfvar -out myplan'
+            }
+        }
+         stage('Approval') {
+            when {
+               not {
+                equals expected:true, params.autoApprove
+               } 
+                steps{
+                    script{
+                        def plan = readFile 'tfplan.txt',
+                        input message: "Do you want to apply the plan?",
+                        parameters: [text(name: 'plan', description: 'please review the plan', defaultValue: plan)]
+                    }
+                }
+            }
+        }
+        stage('Terraform Apply') {
+            steps {
+                echo 'Terraform Apply'
+                sh 'terraform apply --auto-approve'
+            }
+        }
+     
+    }
+}
