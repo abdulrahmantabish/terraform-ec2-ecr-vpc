@@ -32,7 +32,7 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 echo 'Terraform initialization is in progress'
-                sh 'terraform plan --var terraform.tfvar -out myplan'
+                sh 'terraform plan --var terraform.tfvars -out myplan'
             }
         }
         stage('Approval') {
