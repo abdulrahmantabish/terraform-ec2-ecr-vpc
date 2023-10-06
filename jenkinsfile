@@ -41,6 +41,11 @@ pipeline {
                 sh 'terraform apply --auto-approve'
             }
         }
-     
+     stage('Terraform destory') {
+            steps {
+                echo 'Terraform destory'
+                sh 'terraform destory --auto-approve'
+            }
+        }
     }
 }
