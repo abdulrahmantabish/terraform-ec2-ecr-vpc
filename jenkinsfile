@@ -32,8 +32,22 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 echo 'Terraform initialization is in progress'
-                sh 'terraform plan --var-file=terraform.tfvars -out=myplan'
+                sh 'terraform plan --var-file=terraform.tfvars -out=tfplan.txt'
             }
+        }
+         stage('Approval') {
+            when {
+               not {
+                equals expected:true, params.autoApprove
+               } 
+            }
+            steps{
+                    script{
+                        def plan = readFile 'tfplan.txt',
+                        input message: "Do you want to apply the plan?",
+                            parameters: [text(name: 'plan', description: 'please review the plan', defaultValue: plan)]
+                    }
+                }
         }
         stage('Terraform Apply') {
             steps {
@@ -41,11 +55,6 @@ pipeline {
                 sh 'terraform apply --auto-approve'
             }
         }
-     stage('Terraform destroy') {
-            steps {
-                echo 'Terraform destroy'
-                sh 'terraform destroy --auto-approve'
-            }
-        }
+     
     }
 }
