@@ -38,7 +38,7 @@ pipeline {
          stage('Approval') {
             when {
                not {
-                equals expected:true, params.autoApprove
+                equals expected:true, actual: params.autoApprove
                } 
             }
             steps{
