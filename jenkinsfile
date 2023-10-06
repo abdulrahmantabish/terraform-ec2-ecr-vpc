@@ -5,11 +5,11 @@ pipeline {
     }
 
     agent any
-
+    
     environment {
         AWS_ACCESS_KEY_ID     = credentials('terraform-aws')
         AWS_SECRET_ACCESS_KEY = credentials('terraform-aws')
-
+    }
     stages {
         stage('Terraform version') {
             steps {
@@ -32,24 +32,23 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 echo 'Terraform initialization is in progress'
-                sh 'terraform plan --var terraform.tfvars -out myplan'
+                sh 'terraform plan --var-file=terraform.tfvars -out=myplan'
             }
         }
-        stage('Approval') {
-              when {
-                 not {
-                  equals expected:true, params.autoApprove
-                 } 
-                steps{
+         stage('Approval') {
+            when {
+               not {
+                equals expected:true, params.autoApprove
+               } 
+            }
+            steps{
                     script{
                         def plan = readFile 'tfplan.txt',
                         input message: "Do you want to apply the plan?",
                         parameters: [text(name: 'plan', description: 'please review the plan', defaultValue: plan)]
                     }
                 }
-            }
         }
-        
         stage('Terraform Apply') {
             steps {
                 echo 'Terraform Apply'
